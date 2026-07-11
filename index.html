@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Дашборд по диалогам бота</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --border: #dfe5f0;
+      --soft: #f7f9fd;
+      --blue-soft: #e8efff;
+      --orange: #f59f00;
+      --red: #dc2626;
+      --shadow: 0 14px 32px rgba(23, 32, 51, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, Arial, sans-serif;
+    }
+    .dashboard { max-width: 1180px; margin: 0 auto; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+    .subtitle { margin: 0; color: var(--muted); font-size: 15px; }
+    .period-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 14px;
+      box-shadow: var(--shadow);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .period-chip span { color: var(--muted); }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      min-height: 168px;
+    }
+    .kpi-title {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      min-height: 36px;
+      margin-bottom: 16px;
+    }
+    .kpi-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .kpi-cell {
+      background: var(--soft);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .kpi-cell-label {
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 7px;
+    }
+    .kpi-value {
+      font-size: 32px;
+      line-height: 1;
+      font-weight: 850;
+      letter-spacing: -0.04em;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    .panel h2 {
+      margin: 0 0 16px;
+      font-size: 19px;
+      letter-spacing: -0.02em;
+    }
+    .rate-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .rate-table th {
+      text-align: left;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 0 0 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .rate-table td {
+      padding: 13px 0;
+      border-bottom: 1px solid #edf1f7;
+      vertical-align: middle;
+    }
+    .rate-table tr:last-child td { border-bottom: 0; }
+    .metric-name { font-weight: 800; }
+    .metric-note {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+      margin-top: 3px;
+    }
+    .percent {
+      font-weight: 850;
+      font-size: 20px;
+      white-space: nowrap;
+    }
+    .split-card { display: grid; gap: 18px; }
+    .split-row { display: grid; gap: 10px; }
+    .split-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: baseline;
+    }
+    .split-title { font-size: 14px; font-weight: 800; }
+    .split-total { color: var(--muted); font-size: 13px; }
+    .split-bar {
+      height: 44px;
+      display: flex;
+      overflow: hidden;
+      border-radius: 16px;
+      background: #eef2f8;
+    }
+    .split-before { background: var(--red); }
+    .split-after { background: var(--orange); }
+    .split-legend {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .legend-piece {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+    .dot.red { background: var(--red); }
+    .dot.orange { background: var(--orange); }
+    .insight {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .main-insight {
+      background: linear-gradient(135deg, var(--blue-soft), #ffffff);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 20px;
+    }
+    .main-insight-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .main-insight-value {
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      margin-bottom: 8px;
+    }
+    .main-insight p, .text-insight p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .text-insight {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .text-insight h2 {
+      margin: 0 0 10px;
+      font-size: 19px;
+      letter-spacing: -0.02em;
+    }
+    .accent { color: var(--text); font-weight: 800; }
+    @media (max-width: 1050px) {
+      body { padding: 20px; }
+      .header { flex-direction: column; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .grid-2, .insight { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .kpi-pair { grid-template-columns: 1fr; }
+      h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="dashboard">
+    <section class="header">
+      <div>
+        <h1>Дашборд по диалогам бота</h1>
+        <p class="subtitle">Компактное сравнение отчётного периода и накопительных показателей без повторения одних и тех же данных.</p>
+      </div>
+      <div class="period-chip">
+        <strong>Отчётный период</strong>
+        <span>03.07-09.07</span>
+      </div>
+    </section>
+
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">Общее количество диалогов</div>
+        <div class="kpi-pair">
+          <div class="kpi-cell"><div class="kpi-cell-label">Период</div><div class="kpi-value">352</div></div>
+          <div class="kpi-cell"><div class="kpi-cell-label">Всё время</div><div class="kpi-value">790</div></div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Уникальные номера телефонов</div>
+        <div class="kpi-pair">
+          <div class="kpi-cell"><div class="kpi-cell-label">Период</div><div class="kpi-value">51</div></div>
+          <div class="kpi-cell"><div class="kpi-cell-label">Всё время</div><div class="kpi-value">137</div></div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Подключения квалификатора после номера</div>
+        <div class="kpi-pair">
+          <div class="kpi-cell"><div class="kpi-cell-label">Период</div><div class="kpi-value">34</div></div>
+          <div class="kpi-cell"><div class="kpi-cell-label">Всё время</div><div class="kpi-value">85</div></div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Подключения квалификатора всего</div>
+        <div class="kpi-pair">
+          <div class="kpi-cell"><div class="kpi-cell-label">Период</div><div class="kpi-value">183</div></div>
+          <div class="kpi-cell"><div class="kpi-cell-label">Всё время</div><div class="kpi-value">358</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="panel">
+        <h2>Производные показатели</h2>
+        <table class="rate-table">
+          <thead>
+            <tr>
+              <th>Показатель</th>
+              <th>Период</th>
+              <th>Всё время</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <span class="metric-name">Конверсия в телефон</span>
+                <span class="metric-note">Уникальные номера / все диалоги</span>
+              </td>
+              <td class="percent">14,5%</td>
+              <td class="percent">17,3%</td>
+            </tr>
+            <tr>
+              <td>
+                <span class="metric-name">Доля ручного подключения</span>
+                <span class="metric-note">Все подключения квалификатора / все диалоги</span>
+              </td>
+              <td class="percent">52,0%</td>
+              <td class="percent">45,3%</td>
+            </tr>
+            <tr>
+              <td>
+                <span class="metric-name">После номера от всех телефонов</span>
+                <span class="metric-note">Подключения после номера / уникальные номера</span>
+              </td>
+              <td class="percent">66,7%</td>
+              <td class="percent">62,0%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <h2>Структура подключений квалификатора</h2>
+        <div class="split-card">
+          <div class="split-row">
+            <div class="split-header">
+              <span class="split-title">Отчётный период</span>
+              <span class="split-total">Всего: 183</span>
+            </div>
+            <div class="split-bar">
+              <div class="split-before" style="width:81.4207650273224%;"></div>
+              <div class="split-after" style="width:18.579234972677597%;"></div>
+            </div>
+            <div class="split-legend">
+              <span class="legend-piece"><span class="dot red"></span>До номера: 149 · 81,4%</span>
+              <span class="legend-piece"><span class="dot orange"></span>После номера: 34 · 18,6%</span>
+            </div>
+          </div>
+          <div class="split-row">
+            <div class="split-header">
+              <span class="split-title">Всё время</span>
+              <span class="split-total">Всего: 358</span>
+            </div>
+            <div class="split-bar">
+              <div class="split-before" style="width:76.25698324022346%;"></div>
+              <div class="split-after" style="width:23.743016759776538%;"></div>
+            </div>
+            <div class="split-legend">
+              <span class="legend-piece"><span class="dot red"></span>До номера: 273 · 76,3%</span>
+              <span class="legend-piece"><span class="dot orange"></span>После номера: 85 · 23,7%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="insight">
+      <div class="main-insight">
+        <div class="main-insight-label">Ключевое наблюдение</div>
+        <div class="main-insight-value">52,0%</div>
+        <p>За период доля ручного подключения выше накопительной: 52,0% против 45,3%.</p>
+      </div>
+
+      <div class="text-insight">
+        <h2>Вывод</h2>
+        <p>
+          За 03.07-09.07 конверсия в телефон составила <span class="accent">14,5%</span>, что ниже накопительного уровня <span class="accent">17,3%</span>.
+          Доля подключений квалификатора за период выше: <span class="accent">52,0%</span> против <span class="accent">45,3%</span>.
+          Основная часть подключений происходит до получения номера: <span class="accent">81,4%</span> за период и <span class="accent">76,3%</span> за всё время.
+        </p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

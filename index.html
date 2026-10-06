@@ -1,175 +1,426 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Дашборд по диалогам бота</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Чат-бот таксопарка: квалификатор</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:#f4f6fb; --card:#fff; --text:#172033; --muted:#667085; --border:#dfe5f0;
-  --soft:#f7f9fd; --blue-soft:#e8efff; --orange:#f59f00; --red:#dc2626;
-  --shadow:0 14px 32px rgba(23,32,51,.08);
+  --bg: #ECEEF1;
+  --surface: #FFFFFF;
+  --ink: #1B1E23;
+  --muted: #5F6670;
+  --line: #D3D8DE;
+  --track: #E4E7EB;
+  --taxi: #F5C400;
+  --taxi-ink: #1B1E23;
+  --asphalt: #2F4A6B;
+  --asphalt-ink: #FFFFFF;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-* { box-sizing:border-box; }
-body { margin:0; padding:32px; background:var(--bg); color:var(--text); font-family:Inter,Arial,sans-serif; }
-.dashboard { max-width:1180px; margin:0 auto; }
-.header { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; margin-bottom:22px; }
-h1 { margin:0 0 8px; font-size:32px; line-height:1.15; letter-spacing:-.03em; }
-.subtitle { margin:0; color:var(--muted); font-size:15px; }
-.period-chip { display:inline-flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:10px 14px; box-shadow:var(--shadow); font-size:14px; white-space:nowrap; }
-.period-chip span { color:var(--muted); }
-.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:18px; }
-.kpi-card { background:var(--card); border:1px solid var(--border); border-radius:22px; padding:18px; box-shadow:var(--shadow); min-height:168px; }
-.kpi-title { color:var(--muted); font-size:13px; line-height:1.35; min-height:36px; margin-bottom:16px; }
-.kpi-pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.kpi-cell { background:var(--soft); border-radius:16px; padding:12px; }
-.kpi-cell-label { color:var(--muted); font-size:11px; margin-bottom:7px; }
-.kpi-value { font-size:32px; line-height:1; font-weight:850; letter-spacing:-.04em; }
-.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px; }
-.panel { background:var(--card); border:1px solid var(--border); border-radius:24px; padding:22px; box-shadow:var(--shadow); }
-.panel h2 { margin:0 0 16px; font-size:19px; letter-spacing:-.02em; }
-.rate-table { width:100%; border-collapse:collapse; font-size:14px; }
-.rate-table th { text-align:left; color:var(--muted); font-size:12px; font-weight:800; padding:0 0 10px; border-bottom:1px solid var(--border); }
-.rate-table td { padding:13px 0; border-bottom:1px solid #edf1f7; vertical-align:middle; }
-.rate-table tr:last-child td { border-bottom:0; }
-.metric-name { font-weight:800; }
-.metric-note { display:block; color:var(--muted); font-size:12px; font-weight:400; margin-top:3px; }
-.percent { font-weight:850; font-size:20px; white-space:nowrap; }
-.split-card { display:grid; gap:18px; }
-.split-row { display:grid; gap:10px; }
-.split-header { display:flex; justify-content:space-between; gap:16px; align-items:baseline; }
-.split-title { font-size:14px; font-weight:800; }
-.split-total { color:var(--muted); font-size:13px; }
-.split-bar { height:44px; display:flex; overflow:hidden; border-radius:16px; background:#eef2f8; }
-.split-before { background:var(--red); }
-.split-after { background:var(--orange); }
-.split-legend { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:var(--muted); font-size:13px; }
-.legend-piece { display:inline-flex; align-items:center; gap:7px; }
-.dot { width:10px; height:10px; border-radius:999px; display:inline-block; }
-.dot.red { background:var(--red); }
-.dot.orange { background:var(--orange); }
-.insight { display:grid; grid-template-columns:.9fr 1.1fr; gap:18px; align-items:stretch; }
-.main-insight { background:linear-gradient(135deg,var(--blue-soft),#fff); border:1px solid var(--border); border-radius:22px; padding:20px; }
-.main-insight-label { color:var(--muted); font-size:13px; font-weight:700; margin-bottom:8px; }
-.main-insight-value { font-size:38px; font-weight:900; letter-spacing:-.05em; margin-bottom:8px; }
-.main-insight p,.text-insight p { margin:0; color:var(--muted); font-size:14px; line-height:1.55; }
-.text-insight { background:var(--card); border:1px solid var(--border); border-radius:22px; padding:20px; box-shadow:var(--shadow); }
-.text-insight h2 { margin:0 0 10px; font-size:19px; letter-spacing:-.02em; }
-.accent { color:var(--text); font-weight:800; }
-@media(max-width:1050px) { body{padding:20px} .header{flex-direction:column} .kpi-grid{grid-template-columns:repeat(2,1fr)} .grid-2,.insight{grid-template-columns:1fr} }
-@media(max-width:640px) { .kpi-grid{grid-template-columns:1fr} .kpi-pair{grid-template-columns:1fr} h1{font-size:26px} }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161A;
+    --surface: #1D2025;
+    --ink: #ECEEF0;
+    --muted: #9AA1AB;
+    --line: #343A42;
+    --track: #2A2E35;
+    --taxi: #F5C400;
+    --taxi-ink: #1B1E23;
+    --asphalt: #86A9D1;
+    --asphalt-ink: #14161A;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161A;
+  --surface: #1D2025;
+  --ink: #ECEEF0;
+  --muted: #9AA1AB;
+  --line: #343A42;
+  --track: #2A2E35;
+  --taxi: #F5C400;
+  --taxi-ink: #1B1E23;
+  --asphalt: #86A9D1;
+  --asphalt-ink: #14161A;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Golos Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  -webkit-text-size-adjust: 100%;
+}
+.page { max-width: 1040px; margin: 0 auto; padding: 0 20px 64px; }
+
+/* шашечки такси — единственный декоративный элемент страницы */
+.checker {
+  height: 16px;
+  background: repeating-conic-gradient(var(--ink) 0 25%, var(--taxi) 0 50%) 0 0 / 16px 16px;
+}
+
+header { padding: 36px 0 8px; }
+h1 { font-size: 2.25rem; line-height: 1.1; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.02em; }
+.sub { color: var(--muted); margin: 0; }
+
+.summary {
+  margin: 28px 0 36px;
+  padding: 4px 0 4px 20px;
+  border-left: 6px solid var(--taxi);
+  max-width: 70ch;
+  font-size: 1.125rem;
+  line-height: 1.55;
+}
+.summary p { margin: 0; }
+
+h2 { font-size: 1.5rem; line-height: 1.2; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+h3 { font-size: 1rem; font-weight: 600; margin: 0 0 16px; }
+
+.month-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-bottom: 16px; }
+.month-head .note { color: var(--muted); font-size: 0.875rem; margin: 4px 0 0; }
+.months { display: flex; flex-wrap: wrap; gap: 6px; }
+.months button {
+  font: inherit; font-size: 0.875rem; font-weight: 500;
+  color: var(--ink); background: transparent;
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 6px 14px; cursor: pointer;
+}
+.months button:hover { border-color: var(--ink); }
+.months button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.months button:focus-visible, a:focus-visible { outline: 3px solid var(--taxi); outline-offset: 2px; }
+
+.panel { background: var(--surface); border-radius: 14px; padding: 24px; }
+.grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 820px) {
+  .grid { grid-template-columns: 3fr 2fr; }
+  .grid .wide { grid-column: 1 / -1; }
+}
+
+/* воронка */
+.funnel-row { display: grid; grid-template-columns: 96px 1fr; gap: 4px 16px; align-items: center; }
+.funnel-row .name { color: var(--muted); font-size: 0.9375rem; }
+.funnel-row .val { font-size: 1.75rem; font-weight: 700; line-height: 1.15; }
+.bar { height: 14px; background: var(--track); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.bar > i { display: block; height: 100%; background: var(--taxi); border-radius: 4px; min-width: 2px; }
+.bar.empty { background: repeating-linear-gradient(135deg, var(--track) 0 6px, transparent 6px 12px); border: 1px dashed var(--line); }
+.step { margin: 10px 0 10px 112px; padding-left: 12px; border-left: 2px solid var(--line); font-size: 0.9375rem; color: var(--muted); }
+.step b { color: var(--ink); font-weight: 600; }
+.delta { color: var(--muted); font-size: 0.8125rem; font-weight: 400; }
+.nodata { color: var(--muted); font-size: 0.875rem; font-weight: 400; }
+
+/* квалификатор */
+.big { font-size: 2.5rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
+.cap { color: var(--muted); font-size: 0.9375rem; margin: 2px 0 0; }
+.split { display: flex; height: 30px; border-radius: 6px; overflow: hidden; margin: 20px 0 10px; background: var(--track); }
+.split .before { background: var(--taxi); }
+.split .after { background: var(--asphalt); }
+.split i { display: block; min-width: 3px; }
+.legend { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 0.9375rem; }
+.legend li { display: flex; align-items: baseline; gap: 8px; }
+.legend .sw { width: 10px; height: 10px; border-radius: 2px; flex: none; transform: translateY(-1px); }
+.legend .num { margin-left: auto; font-weight: 600; white-space: nowrap; }
+.legend .num span { color: var(--muted); font-weight: 400; }
+.fine { color: var(--muted); font-size: 0.8125rem; margin: 16px 0 0; max-width: 60ch; }
+
+/* стоимость */
+.costs { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.costs .val { font-size: 1.75rem; font-weight: 700; line-height: 1.15; }
+.costs .name { color: var(--muted); font-size: 0.9375rem; }
+
+/* накопительный итог */
+.total { margin-top: 56px; }
+.total > h2 { margin-bottom: 4px; }
+.total > .cap { margin-bottom: 16px; }
+.charts { display: grid; gap: 16px; grid-template-columns: 1fr; margin-bottom: 16px; }
+@media (min-width: 820px) { .charts { grid-template-columns: 1fr 1fr; } }
+.chart-scroll { overflow-x: auto; }
+.cols { display: flex; align-items: flex-end; gap: 28px; height: 200px; padding-top: 24px; min-width: min-content; }
+.col { display: flex; flex-direction: column; align-items: center; height: 100%; flex: none; }
+.col .pair { display: flex; align-items: flex-end; gap: 6px; flex: 1; }
+.col .stick { width: 46px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; }
+.col .stick span { font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; white-space: nowrap; }
+.col .stick i { display: block; width: 100%; border-radius: 4px 4px 0 0; min-height: 2px; }
+.col .stick.a i { background: var(--taxi); }
+.col .stick.b i { background: var(--asphalt); }
+.col .lbl { font-size: 0.8125rem; color: var(--muted); margin-top: 8px; border-top: 1px solid var(--line); padding-top: 6px; width: 100%; text-align: center; }
+.keys { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 14px 0 0; padding: 0; list-style: none; font-size: 0.8125rem; color: var(--muted); }
+.keys li { display: flex; align-items: center; gap: 6px; }
+.keys .sw { width: 10px; height: 10px; border-radius: 2px; }
+
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.875rem; white-space: nowrap; }
+th, td { padding: 10px 12px; text-align: right; border-bottom: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; padding-left: 0; }
+th:last-child, td:last-child { padding-right: 0; }
+thead th { font-weight: 500; color: var(--muted); vertical-align: bottom; white-space: normal; min-width: 84px; }
+tbody tr:last-child td { border-bottom: 0; }
+tfoot td { font-weight: 700; border-bottom: 0; border-top: 2px solid var(--ink); }
+
+a { color: inherit; text-decoration: underline; text-decoration-color: var(--taxi); text-decoration-thickness: 3px; text-underline-offset: 4px; }
+a:hover { text-decoration-color: currentColor; }
+td a { text-decoration-thickness: 2px; text-underline-offset: 3px; }
+footer { margin-top: 32px; color: var(--muted); font-size: 0.8125rem; max-width: 80ch; }
+footer p { margin: 0 0 6px; }
 </style>
 </head>
 <body>
-<main class="dashboard">
-  <section class="header">
+<div class="checker" aria-hidden="true"></div>
+<div class="page">
+
+<header>
+  <h1>Чат-бот таксопарка</h1>
+  <p class="sub">Диалоги, полученные номера и подключение квалификатора</p>
+</header>
+
+<!-- ВЫВОД. Пишется вручную заново каждый месяц: что изменилось к прошлому месяцу. -->
+<section class="summary" aria-label="Вывод">
+  <p>В сентябре диалогов и номеров стало меньше примерно на 35%: 978 диалогов и 147 номеров, конверсия в номер прежняя — 15,0%. Доля ручного подключения снизилась с 53,3% до 18,6%, а после получения номера теперь происходит 65,9% подключений против 36,0% в августе. Лидов в БЭК создано 155 против 216 в августе. Сумму на бота за сентябрь получить невозможно, стоимость номера и лида за месяц не считается.</p>
+</section>
+
+<main>
+  <div class="month-head">
     <div>
-      <h1>Дашборд по диалогам бота</h1>
-      <p class="subtitle">Компактное сравнение отчётного периода и восстановленного накопительного среза.</p>
+      <h2 id="month-title"></h2>
+      <p class="note" id="month-note" hidden></p>
     </div>
-    <div class="period-chip"><strong>Отчётный период</strong><span>04.08-06.08</span></div>
-  </section>
+    <div class="months" id="months" role="group" aria-label="Выбор месяца"></div>
+  </div>
 
-  <section class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-title">Общее количество диалогов</div>
-      <div class="kpi-pair">
-        <div class="kpi-cell"><div class="kpi-cell-label">Период</div><div class="kpi-value">114</div></div>
-        <div class="kpi-cell"><div class="kpi-cell-label">Всё время</div><div class="kpi-value">1869</div></div>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-title">Уникальные номера телефонов</div>
-      <div class="kpi-pair">
-        <div class="kpi-cell"><div class="kpi-cell-label">Период</div><div class="kpi-value">14</div></div>
-        <div class="kpi-cell"><div class="kpi-cell-label">Всё время</div><div class="kpi-value">292</div></div>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-title">Подключения квалификатора после номера</div>
-      <div class="kpi-pair">
-        <div class="kpi-cell"><div class="kpi-cell-label">Период</div><div class="kpi-value">5</div></div>
-        <div class="kpi-cell"><div class="kpi-cell-label">Всё время</div><div class="kpi-value">144</div></div>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-title">Подключения квалификатора всего</div>
-      <div class="kpi-pair">
-        <div class="kpi-cell"><div class="kpi-cell-label">Период</div><div class="kpi-value">26</div></div>
-        <div class="kpi-cell"><div class="kpi-cell-label">Всё время</div><div class="kpi-value">625</div></div>
-      </div>
-    </div>
-  </section>
+  <div class="grid">
+    <section class="panel" aria-labelledby="h-funnel">
+      <h3 id="h-funnel">От диалога до лида</h3>
+      <div id="funnel"></div>
+    </section>
 
-  <section class="grid-2">
-    <div class="panel">
-      <h2>Производные показатели</h2>
-      <table class="rate-table">
-        <thead><tr><th>Показатель</th><th>Период</th><th>Всё время</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><span class="metric-name">Конверсия в телефон</span><span class="metric-note">Уникальные номера / все диалоги</span></td>
-            <td class="percent">12,3%</td>
-            <td class="percent">15,6%</td>
-          </tr>
-          <tr>
-            <td><span class="metric-name">Доля ручного подключения</span><span class="metric-note">Все подключения квалификатора / все диалоги</span></td>
-            <td class="percent">22,8%</td>
-            <td class="percent">33,4%</td>
-          </tr>
-          <tr>
-            <td><span class="metric-name">После номера от всех телефонов</span><span class="metric-note">Подключения после номера / уникальные номера</span></td>
-            <td class="percent">35,7%</td>
-            <td class="percent">49,3%</td>
-          </tr>
-        </tbody>
-      </table>
+    <section class="panel" aria-labelledby="h-qual">
+      <h3 id="h-qual">Подключение квалификатора</h3>
+      <div id="qual"></div>
+      <p class="fine">Причина подключения не фиксируется, поэтому эти цифры описывают поведение квалификаторов, а не качество бота.</p>
+    </section>
+
+    <section class="panel wide" aria-labelledby="h-cost">
+      <h3 id="h-cost">Стоимость</h3>
+      <div class="costs" id="costs"></div>
+    </section>
+  </div>
+
+  <section class="total" aria-labelledby="h-total">
+    <h2 id="h-total">Накопительный итог</h2>
+    <p class="cap" id="total-range"></p>
+
+    <div class="charts">
+      <div class="panel">
+        <h3>Диалоги и номера по месяцам</h3>
+        <div class="chart-scroll"><div class="cols" id="chart-abs"></div></div>
+        <ul class="keys"><li><span class="sw" style="background:var(--taxi)"></span>Диалоги</li><li><span class="sw" style="background:var(--asphalt)"></span>Номера</li></ul>
+      </div>
+      <div class="panel">
+        <h3>Доли по месяцам</h3>
+        <div class="chart-scroll"><div class="cols" id="chart-share"></div></div>
+        <ul class="keys"><li><span class="sw" style="background:var(--taxi)"></span>Конверсия в номер</li><li><span class="sw" style="background:var(--asphalt)"></span>Доля ручного подключения</li></ul>
+      </div>
     </div>
 
     <div class="panel">
-      <h2>Структура подключений квалификатора</h2>
-      <div class="split-card">
-        <div class="split-row">
-          <div class="split-header"><span class="split-title">Отчётный период</span><span class="split-total">Всего: 26</span></div>
-          <div class="split-bar">
-            <div class="split-before" style="width:80.76923076923077%;"></div>
-            <div class="split-after" style="width:19.230769230769234%;"></div>
-          </div>
-          <div class="split-legend">
-            <span class="legend-piece"><span class="dot red"></span>До номера: 21 · 80,8%</span>
-            <span class="legend-piece"><span class="dot orange"></span>После номера: 5 · 19,2%</span>
-          </div>
-        </div>
-        <div class="split-row">
-          <div class="split-header"><span class="split-title">Всё время</span><span class="split-total">Всего: 625</span></div>
-          <div class="split-bar">
-            <div class="split-before" style="width:76.96%;"></div>
-            <div class="split-after" style="width:23.04%;"></div>
-          </div>
-          <div class="split-legend">
-            <span class="legend-piece"><span class="dot red"></span>До номера: 481 · 77,0%</span>
-            <span class="legend-piece"><span class="dot orange"></span>После номера: 144 · 23,0%</span>
-          </div>
-        </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Месяц</th><th>Диалоги</th><th>Номера</th><th>Конверсия в номер</th>
+              <th>Квалификатор, диалогов</th><th>Доля ручного подключения</th><th>До номера</th><th>После номера</th>
+              <th>Лиды</th><th>Из номера в лид</th><th>Сумма на бота</th><th>Стоимость номера</th><th>Стоимость лида</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+          <tfoot id="tfoot"></tfoot>
+        </table>
       </div>
-    </div>
-  </section>
-
-  <section class="insight">
-    <div class="main-insight">
-      <div class="main-insight-label">Ключевое наблюдение</div>
-      <div class="main-insight-value">22,8%</div>
-      <p>За период доля ручного подключения ниже накопительной: 22,8% против 33,4%.</p>
-    </div>
-    <div class="text-insight">
-      <h2>Вывод</h2>
-      <p>
-        За 04.08-06.08 конверсия в телефон составила <span class="accent">12,3%</span>, что ниже восстановленного накопительного уровня <span class="accent">15,6%</span>.
-        При этом доля подключений квалификатора за период также ниже накопительной: <span class="accent">22,8%</span> против <span class="accent">33,4%</span>.
-        Из <span class="accent">26</span> подключений за период <span class="accent">21</span> произошли до получения номера.
-      </p>
     </div>
   </section>
 </main>
+
+<footer>
+  <p>В итоговой строке доли и стоимости пересчитаны от сумм, а не усреднены по месяцам.</p>
+  <p>«—» означает, что данных нет или знаменатель равен нулю. В итоге конверсия в лид считается только по месяцам, где лиды собирались, а стоимости — только по месяцам, где известна сумма на бота.</p>
+</footer>
+</div>
+
+<script>
+/* ДАННЫЕ. Каждый месяц — новая строка в конец массива.
+   leads: null — данные не собирались. cost: null — сумму получить невозможно.
+   leads_url: "https://..." — необязательно, делает число лидов ссылкой.
+   through: "ГГГГ-ММ-ДД" — добавить, если месяц неполный (дата, по которую есть данные). */
+const DATA = [
+  { month: "2026-07", dialogs: 1092, phones: 164, qualifier_total: 676, qualifier_after_phone: 64, leads: null, cost: 22.6 },
+  { month: "2026-08", dialogs: 1522, phones: 227, qualifier_total: 811, qualifier_after_phone: 292, leads: 216, leads_url: "https://3q.su/m8ct", cost: 63.95 },
+  { month: "2026-09", dialogs: 978, phones: 147, qualifier_total: 182, qualifier_after_phone: 120, leads: 155, leads_url: "https://3q.su/m8xu", cost: null }
+];
+
+const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+const MONTHS_GEN = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+const MONTHS_DAT = ["январю","февралю","марту","апрелю","маю","июню","июлю","августу","сентябрю","октябрю","ноябрю","декабрю"];
+const DASH = "—";
+
+const div = (a, b) => (a == null || b == null || b === 0) ? null : a / b;
+const int = v => v == null ? DASH : v.toLocaleString("ru-RU");
+const pct = v => v == null ? DASH : (v * 100).toFixed(1).replace(".", ",") + "%";
+const usd = v => v == null ? DASH : "$" + v.toFixed(2).replace(".", ",");
+const leadsHtml = d => (d.leads != null && d.leads_url) ? '<a href="' + d.leads_url + '" target="_blank" rel="noopener noreferrer">' + int(d.leads) + "</a>" : int(d.leads);
+const mIdx = d => +d.month.slice(5) - 1;
+const mName = d => MONTHS[mIdx(d)] + " " + d.month.slice(0, 4);
+const mShort = d => MONTHS[mIdx(d)].slice(0, 3).toLowerCase() + " " + d.month.slice(2, 4);
+
+function metrics(d) {
+  return {
+    conv: div(d.phones, d.dialogs),
+    manual: div(d.qualifier_total, d.dialogs),
+    after: div(d.qualifier_after_phone, d.qualifier_total),
+    before: div(d.qualifier_total - d.qualifier_after_phone, d.qualifier_total),
+    leadConv: div(d.leads, d.phones),
+    cpp: div(d.cost, d.phones),
+    cpl: div(d.cost, d.leads)
+  };
+}
+
+/* Сравнение с прошлым месяцем: нейтрально, без оценки «хорошо/плохо». */
+function delta(cur, prev, kind, prevRow, partial) {
+  if (!prevRow || cur == null || prev == null) return "";
+  if (partial && kind !== "share") return "";
+  let txt;
+  if (kind === "share") {
+    const d = (cur - prev) * 100;
+    txt = (d >= 0 ? "+" : "−") + Math.abs(d).toFixed(1).replace(".", ",") + " п.п.";
+  } else {
+    if (prev === 0) return "";
+    const d = (cur / prev - 1) * 100;
+    txt = (d >= 0 ? "+" : "−") + Math.abs(d).toFixed(1).replace(".", ",") + "%";
+  }
+  return ' <span class="delta">' + txt + " к " + MONTHS_DAT[mIdx(prevRow)] + "</span>";
+}
+
+const rows = DATA.slice().sort((a, b) => a.month.localeCompare(b.month));
+let selected = rows.length - 1;
+
+function renderMonth() {
+  const d = rows[selected], m = metrics(d);
+  const p = selected > 0 ? rows[selected - 1] : null;
+  const pm = p ? metrics(p) : {};
+  const partial = !!d.through;
+  const dl = (cur, prev, kind) => delta(cur, prev, kind, p, partial);
+
+  document.getElementById("month-title").textContent = mName(d);
+  const note = document.getElementById("month-note");
+  if (partial) {
+    const t = d.through.split("-");
+    note.textContent = "Месяц неполный: данные по " + (+t[2]) + " " + MONTHS_GEN[+t[1] - 1] + ". Сравнение с прошлым месяцем — только по долям.";
+    note.hidden = false;
+  } else { note.hidden = true; }
+
+  const w = v => Math.max(0, Math.min(100, (div(v, d.dialogs) || 0) * 100)).toFixed(1);
+  const leadsRow = d.leads == null
+    ? '<div class="funnel-row"><div class="name">Лиды в БЭК</div><div><div class="val">' + DASH + ' <span class="nodata">данные не собирались</span></div><div class="bar empty"></div></div></div>'
+    : '<div class="funnel-row"><div class="name">Лиды в БЭК</div><div><div class="val">' + leadsHtml(d) + dl(d.leads, p && p.leads, "abs") + '</div><div class="bar"><i style="width:' + w(d.leads) + '%"></i></div></div></div>';
+
+  document.getElementById("funnel").innerHTML =
+    '<div class="funnel-row"><div class="name">Диалоги</div><div><div class="val">' + int(d.dialogs) + dl(d.dialogs, p && p.dialogs, "abs") + '</div><div class="bar"><i style="width:100%"></i></div></div></div>' +
+    '<div class="step">Конверсия в номер <b>' + pct(m.conv) + "</b>" + dl(m.conv, pm.conv, "share") + "</div>" +
+    '<div class="funnel-row"><div class="name">Номера</div><div><div class="val">' + int(d.phones) + dl(d.phones, p && p.phones, "abs") + '</div><div class="bar"><i style="width:' + w(d.phones) + '%"></i></div></div></div>' +
+    '<div class="step">Конверсия из номера в лид <b>' + pct(m.leadConv) + "</b>" + dl(m.leadConv, pm.leadConv, "share") + "</div>" +
+    leadsRow;
+
+  const beforeN = d.qualifier_total - d.qualifier_after_phone;
+  const bw = m.before == null ? 0 : m.before * 100, aw = m.after == null ? 0 : m.after * 100;
+  document.getElementById("qual").innerHTML =
+    '<div class="big">' + pct(m.manual) + "</div>" +
+    '<p class="cap">Доля ручного подключения: ' + int(d.qualifier_total) + " из " + int(d.dialogs) + " диалогов" + dl(m.manual, pm.manual, "share") + "</p>" +
+    '<div class="split" role="img" aria-label="До номера ' + pct(m.before) + ", после номера " + pct(m.after) + '"><i class="before" style="width:' + bw + '%"></i><i class="after" style="width:' + aw + '%"></i></div>' +
+    '<ul class="legend">' +
+      '<li><span class="sw" style="background:var(--taxi)"></span>До получения номера<span class="num">' + pct(m.before) + " <span>" + int(beforeN) + "</span></span></li>" +
+      '<li><span class="sw" style="background:var(--asphalt)"></span>После получения номера<span class="num">' + pct(m.after) + " <span>" + int(d.qualifier_after_phone) + "</span></span></li>" +
+    "</ul>";
+
+  document.getElementById("costs").innerHTML =
+    '<div><div class="val">' + usd(d.cost) + '</div><div class="name">Сумма на бота за месяц' + (d.cost == null ? ", получить невозможно" : dl(d.cost, p && p.cost, "abs")) + "</div></div>" +
+    '<div><div class="val">' + usd(m.cpp) + '</div><div class="name">Стоимость одного номера' + (d.cost == null ? ", нет суммы на бота" : dl(m.cpp, pm.cpp, "abs")) + "</div></div>" +
+    '<div><div class="val">' + usd(m.cpl) + '</div><div class="name">Стоимость одного лида' + (d.cost == null ? ", нет суммы на бота" : d.leads == null ? ", лиды не собирались" : dl(m.cpl, pm.cpl, "abs")) + "</div></div>";
+
+  document.querySelectorAll("#months button").forEach((b, i) => b.setAttribute("aria-pressed", i === selected ? "true" : "false"));
+}
+
+function renderMonths() {
+  const box = document.getElementById("months");
+  rows.forEach((d, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = mName(d);
+    b.addEventListener("click", () => { selected = i; renderMonth(); });
+    box.appendChild(b);
+  });
+}
+
+function tr(label, d, m, tag) {
+  const c = v => "<" + tag + ">" + v + "</" + tag + ">";
+  return "<tr>" + c(label) + c(int(d.dialogs)) + c(int(d.phones)) + c(pct(m.conv)) +
+    c(int(d.qualifier_total)) + c(pct(m.manual)) + c(pct(m.before)) + c(pct(m.after)) +
+    c(leadsHtml(d)) + c(pct(m.leadConv)) + c(usd(d.cost)) + c(usd(m.cpp)) + c(usd(m.cpl)) + "</tr>";
+}
+
+function renderTotal() {
+  const sum = k => rows.reduce((s, d) => s + (d[k] || 0), 0);
+  const withLeads = rows.filter(d => d.leads != null);
+  const withCost = rows.filter(d => d.cost != null);
+  const withBoth = rows.filter(d => d.cost != null && d.leads != null);
+  const sumOf = (arr, k) => arr.reduce((s, d) => s + (d[k] || 0), 0);
+  const sumL = k => withLeads.reduce((s, d) => s + (d[k] || 0), 0);
+  const T = {
+    dialogs: sum("dialogs"), phones: sum("phones"),
+    qualifier_total: sum("qualifier_total"), qualifier_after_phone: sum("qualifier_after_phone"),
+    leads: withLeads.length ? sumL("leads") : null, cost: withCost.length ? sumOf(withCost, "cost") : null
+  };
+  const TM = metrics(T);
+  /* лидовые метрики — только по месяцам, где лиды собирались */
+  TM.leadConv = withLeads.length ? div(sumL("leads"), sumL("phones")) : null;
+  /* стоимости — только по месяцам, где известна сумма на бота */
+  TM.cpp = withCost.length ? div(sumOf(withCost, "cost"), sumOf(withCost, "phones")) : null;
+  TM.cpl = withBoth.length ? div(sumOf(withBoth, "cost"), sumOf(withBoth, "leads")) : null;
+
+  const first = rows[0], last = rows[rows.length - 1];
+  document.getElementById("total-range").textContent = rows.length === 1
+    ? "Пока один месяц: " + mName(first).toLowerCase() + ". Динамика появится со второго."
+    : mName(first) + " — " + mName(last).toLowerCase() + ", месяцев: " + rows.length;
+
+  document.getElementById("tbody").innerHTML = rows.map(d => tr(mName(d) + (d.through ? "*" : ""), d, metrics(d), "td")).join("");
+  document.getElementById("tfoot").innerHTML = tr("Итого", T, TM, "td");
+
+  const maxAbs = Math.max(1, ...rows.map(d => d.dialogs));
+  document.getElementById("chart-abs").innerHTML = rows.map(d =>
+    '<div class="col"><div class="pair">' +
+      '<div class="stick a"><span>' + int(d.dialogs) + '</span><i style="height:' + (d.dialogs / maxAbs * 100) + '%"></i></div>' +
+      '<div class="stick b"><span>' + int(d.phones) + '</span><i style="height:' + (d.phones / maxAbs * 100) + '%"></i></div>' +
+    '</div><div class="lbl">' + mShort(d) + "</div></div>").join("");
+
+  document.getElementById("chart-share").innerHTML = rows.map(d => {
+    const m = metrics(d);
+    return '<div class="col"><div class="pair">' +
+      '<div class="stick a"><span>' + pct(m.conv) + '</span><i style="height:' + ((m.conv || 0) * 100) + '%"></i></div>' +
+      '<div class="stick b"><span>' + pct(m.manual) + '</span><i style="height:' + ((m.manual || 0) * 100) + '%"></i></div>' +
+    '</div><div class="lbl">' + mShort(d) + "</div></div>";
+  }).join("");
+}
+
+renderMonths();
+renderMonth();
+renderTotal();
+</script>
 </body>
 </html>
